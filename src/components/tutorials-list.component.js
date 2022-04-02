@@ -5,18 +5,22 @@ import { Link } from "react-router-dom";
 export default class TutorialsList extends Component {
   constructor(props) {
     super(props);
-    this.onChangeSearchTitle = this.onChangeSearchTitle.bind(this);
+    this.onChangeSearchTitle = this.onChangeSearchTitle.bind(this);	
+	this.onChangeSearchTech = this.onChangeSearchTech.bind(this);
     this.retrieveTutorials = this.retrieveTutorials.bind(this);
     this.refreshList = this.refreshList.bind(this);
     this.setActiveTutorial = this.setActiveTutorial.bind(this);
     this.removeAllTutorials = this.removeAllTutorials.bind(this);
     this.searchTitle = this.searchTitle.bind(this);
+	this.searchTech = this.searchTech.bind(this);
 
     this.state = {
       tutorials: [],
+	  tutorialNames: [],
       currentTutorial: null,
       currentIndex: -1,
-      searchTitle: ""
+      searchTitle: "",
+	  searchTech:""
     };
   }
 
@@ -31,6 +35,14 @@ export default class TutorialsList extends Component {
       searchTitle: searchTitle
     });
   }
+  
+  onChangeSearchTech(e) {
+    const searchTech = e.target.value;
+
+    this.setState({
+      searchTech: searchTech
+    });
+  }  
 
   retrieveTutorials() {
     TutorialDataService.getAll()
@@ -77,6 +89,7 @@ export default class TutorialsList extends Component {
       currentIndex: -1
     });
 
+
     TutorialDataService.findByTitle(this.state.searchTitle)
       .then(response => {
         this.setState({
@@ -88,18 +101,89 @@ export default class TutorialsList extends Component {
         console.log(e);
       });
   }
+  
+  searchTech() {
+    this.setState({
+      currentTutorial: null,
+      currentIndex: -1
+    });
+	
+
+    TutorialDataService.findByTech(this.state.searchTech)
+      .then(response => {
+		  console.log(response.data.response.docs);
+        this.setState({
+          tutorialNames: response.data.response.docs
+        });
+        
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
 
   render() {
-    const { searchTitle, tutorials, currentTutorial, currentIndex } = this.state;
+    const { searchTitle, searchTech, tutorials, tutorialNames, currentTutorial, currentIndex } = this.state;
 
     return (
+
+		
       <div className="list row">
+	  
         <div className="col-md-8">
           <div className="input-group mb-3">
             <input
               type="text"
               className="form-control"
-              placeholder="Search by title"
+              placeholder="Search by technology from Solr"
+              value={searchTech}
+              onChange={this.onChangeSearchTech}
+            />
+            <div className="input-group-append">
+              <button
+                className="btn btn-outline-secondary"
+                type="button"
+                onClick={this.searchTech}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+		
+		
+		{tutorialNames.length >0 &&
+        <div className="col-md-8">
+          <h4>Technology - Tutorial List</h4>
+
+          <ul className="list-group">
+            {tutorialNames &&
+              tutorialNames.map((tutorial, index) => (
+                <li
+                  className={
+                    "list-group-item " +
+                    (index === currentIndex ? "active" : "")
+                  }
+                  key={index}
+                >
+                  {tutorial.tutorial_name}
+                </li>
+              ))}
+          </ul>
+        </div>		
+		}
+
+		
+        <div className="col-md-8">
+				   <div> 
+          
+           <hr />
+        </div>
+          <div className="input-group mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by title from MongoDB"
               value={searchTitle}
               onChange={this.onChangeSearchTitle}
             />
@@ -114,6 +198,8 @@ export default class TutorialsList extends Component {
             </div>
           </div>
         </div>
+		
+		{tutorials.length >0 &&
         <div className="col-md-6">
           <h4>Tutorials List</h4>
 
@@ -140,6 +226,7 @@ export default class TutorialsList extends Component {
             Remove All
           </button>
         </div>
+		}
         <div className="col-md-6">
           {currentTutorial ? (
             <div>
@@ -173,7 +260,8 @@ export default class TutorialsList extends Component {
           ) : (
             <div>
               <br />
-              <p>Please click on a Tutorial...</p>
+			  {tutorials.lengh >0 &&
+              <p>Please click on a Tutorial...</p>}
             </div>
           )}
         </div>

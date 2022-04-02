@@ -1,4 +1,5 @@
 import http from "../http-common";
+import httpSolr from "../http-solr";
 
 class TutorialDataService {
   getAll() {
@@ -27,6 +28,10 @@ class TutorialDataService {
 
   findByTitle(title) {
     return http.get(`/tutorials?title=${title}`);
+  }
+  
+  findByTech(technology) {
+	  return httpSolr.get(`/select?q=technology:${technology}`);
   }
 }
 
